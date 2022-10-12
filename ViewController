@@ -1,0 +1,66 @@
+import UIKit
+
+class ViewController: UIViewController {
+    @IBOutlet weak var timeLabel: UILabel!
+    @IBOutlet weak var startButton: UIButton!
+    @IBOutlet weak var stopButton: UIButton!
+    
+        var seconds = 0
+        var timer = Timer()
+        var isTimerRunning = false
+
+    @objc func background(){
+        print(timeLabel.text ?? "00:00")
+        timer.invalidate()
+    }
+    @objc func active(){
+        if isTimerRunning == true {
+            print(timeLabel.text ?? "00:00")
+            runTimer()
+        }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        NotificationCenter.default.addObserver(self, selector: #selector(background), name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(active), name: UIApplication.willEnterForegroundNotification, object: nil)
+    }
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @IBAction func startTimer(_ sender: Any) {
+            startButton.alpha = 0.5
+            startButton.isEnabled = false
+            stopButton.alpha = 1
+            stopButton.isEnabled = true
+            runTimer()
+    }
+    @IBAction func stopTimer(_ sender: Any) {
+        startButton.alpha = 1
+        startButton.isEnabled = true
+        stopButton.alpha = 0.5
+        stopButton.isEnabled = false
+        timer.invalidate()
+        isTimerRunning = false
+    }
+    
+    
+    func runTimer(){
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: (#selector(updateTimer)), userInfo: nil, repeats: true)
+        RunLoop.current.add(timer, forMode: .common)
+        isTimerRunning = true
+    }
+    
+    @objc func updateTimer(){
+        seconds += 1
+        timeLabel.text = timeString(time: TimeInterval(seconds))
+    }
+    
+    func timeString(time: TimeInterval) -> String {
+        let minutes = Int(time) / 60 % 60
+        let seconds = Int(time) % 60
+        return String(format: "%02i:%02i", minutes, seconds)
+    }
+
+}
